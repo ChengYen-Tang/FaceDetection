@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Emgu.CV" Version="4.2.0.3662" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.2.0.3662" />
+    <PackageReference Include="Emgu.CV.runtime.windows.cuda" Version="4.2.0.3662" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="models\opencv_face_detector.pbtxt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="models\opencv_face_detector_uint8.pb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
