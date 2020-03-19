@@ -9,21 +9,22 @@ using System.Runtime.InteropServices;
 
 namespace FaceDetection
 {
-    public class FaceAnalysis : IDisposable
+    public class FaceDetector : IDisposable
     {
-        protected Net model;
+        private readonly Net detectorModel;
 
         /// <summary>
         /// 初始化 Face 抽象類別
         /// </summary>
-        public FaceAnalysis()
+        public FaceDetector()
         {
             string programPath = AppDomain.CurrentDomain.BaseDirectory;
             string modelsPath = Path.Combine(programPath, "models");
-            string pbPath = Path.Combine(modelsPath, "opencv_face_detector_uint8.pb");
-            string pbtxtPath = Path.Combine(modelsPath, "opencv_face_detector.pbtxt");
+            string detectionPbPath = Path.Combine(modelsPath, "opencv_face_detector_uint8.pb");
+            string detectionPbtxtPath = Path.Combine(modelsPath, "opencv_face_detector.pbtxt");
+            string maskPbPath = Path.Combine(modelsPath, "face_mask_model.onnx");
 
-            model = DnnInvoke.ReadNetFromTensorflow(pbPath, pbtxtPath);
+            detectorModel = DnnInvoke.ReadNetFromTensorflow(detectionPbPath, detectionPbtxtPath);
         }
 
         /// <summary>
@@ -31,11 +32,11 @@ namespace FaceDetection
         /// </summary>
         /// <param name="image"> 圖片 </param>
         /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
-        public IEnumerable<int[]> Detect(Mat image)
+        public IEnumerable<IReadOnlyDictionary<string, int>> Detect(Mat image)
         {
             Mat inputBlob = DnnInvoke.BlobFromImage(image, 1.0, new Size(300, 300), new MCvScalar(104.0, 117.0, 123.0), true, false);
-            model.SetInput(inputBlob, "data");
-            Mat detection = model.Forward("detection_out");
+            detectorModel.SetInput(inputBlob, "data");
+            Mat detection = detectorModel.Forward("detection_out");
 
             // 神經網路輸出形狀 (1, 1, {face count}, 7)
             // 第四項內容是人臉偵測結果的值共七個[0, 1, 2, 3, 4, 5, 6, 7]
@@ -58,7 +59,13 @@ namespace FaceDetection
                     int x2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 5] * image.Width);
                     int y2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 6] * image.Height);
 
-                    yield return new int[] { x1, y1, x2 - x1, y2 - y1 };
+                    Dictionary<string, int> face = new Dictionary<string, int>();
+                    face.Add("top", x1);
+                    face.Add("left", y1);
+                    face.Add("width", x2 - x1);
+                    face.Add("height", y2 - y1);
+
+                    yield return face;
                 }
             }
         }
@@ -72,7 +79,7 @@ namespace FaceDetection
             {
                 if (disposing)
                 {
-                    model.Dispose();
+                    detectorModel.Dispose();
                 }
 
                 // TODO: 釋放 Unmanaged 資源 (Unmanaged 物件) 並覆寫下方的完成項。
@@ -83,7 +90,7 @@ namespace FaceDetection
         }
 
         // TODO: 僅當上方的 Dispose(bool disposing) 具有會釋放 Unmanaged 資源的程式碼時，才覆寫完成項。
-        ~FaceAnalysis()
+        ~FaceDetector()
         {
             // 請勿變更這個程式碼。請將清除程式碼放入上方的 Dispose(bool disposing) 中。
             Dispose(false);

@@ -8,11 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Emgu.CV" Version="4.2.0.3662" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.2.0.3662" />
-    <PackageReference Include="Emgu.CV.runtime.windows.cuda" Version="4.2.0.3662" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="models\" />
+    <PackageReference Include="Microsoft.ML" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>

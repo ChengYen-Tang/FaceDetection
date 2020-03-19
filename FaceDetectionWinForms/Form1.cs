@@ -16,12 +16,12 @@ namespace FaceDetectionWinForms
     public partial class Form1 : Form
     {
         private VideoCapture capture = null;
-        private readonly FaceAnalysis faceDetection = null;
+        private readonly FaceDetector faceDetection = null;
 
         public Form1()
         {
             InitializeComponent();
-            faceDetection = new FaceAnalysis();
+            faceDetection = new FaceDetector();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -38,10 +38,13 @@ namespace FaceDetectionWinForms
                 using (Mat frame = new Mat())
                 {
                     capture.Retrieve(frame, 0);
-                    //IEnumerable<int[]> faces = faceDetection.Detect(frame);
-                    //IEnumerable<Rectangle> facesRectangle = faces.Select(face => new Rectangle(face[0], face[1], face[2], face[3]));
-                    //foreach (Rectangle face in facesRectangle)
-                    //    CvInvoke.Rectangle(frame, face, new Bgr(Color.Green).MCvScalar, 2);
+                    IEnumerable<IReadOnlyDictionary<string, int>> faces = faceDetection.Detect(frame);
+                    IEnumerable<Rectangle> facesRectangle = faces.Select(face => new Rectangle(face["top"], face["left"], face["width"], face["height"]));
+                    foreach (Rectangle face in facesRectangle)
+                    {
+                        CvInvoke.Rectangle(frame, face, new Bgr(Color.Green).MCvScalar, 2);
+                    }
+
                     imageBox1.Image = frame.ToImage<Bgr, byte>();
                 }
             }
