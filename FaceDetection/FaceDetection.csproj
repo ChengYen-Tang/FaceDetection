@@ -9,9 +9,20 @@
     <PackageReference Include="Emgu.CV" Version="4.2.0.3662" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.2.0.3662" />
     <PackageReference Include="Microsoft.ML" Version="1.4.0" />
+    <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.4.0" />
+    <PackageReference Include="Microsoft.ML.TensorFlow" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="models\face_mask_0.pb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="models\face_mask_1.pb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="models\face_mask_2.pb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="models\opencv_face_detector.pbtxt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
