@@ -18,11 +18,11 @@ namespace FaceDetection
         /// <summary>
         /// 初始化口罩偵測物件
         /// </summary>
-        public FaceMaskDetector(string modelName = "face_mask_0.pb", float probabilityThreshold = 50)
+        public FaceMaskDetector(string modelName = "face_mask_2.pb", float probabilityThreshold = 40)
         {
             string programPath = AppDomain.CurrentDomain.BaseDirectory;
             string modelsPath = Path.Combine(programPath, "models");
-            string modelPath = Path.Combine(modelsPath, "face_mask_0.pb");
+            string modelPath = Path.Combine(modelsPath, modelName);
             
             context = new MLContext();
             model = SetupModel(modelPath);
