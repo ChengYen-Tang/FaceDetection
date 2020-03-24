@@ -29,6 +29,18 @@ namespace FaceDetection
         /// <summary>
         /// 偵測圖片中的臉部
         /// </summary>
+        /// <param name="imageData"> 圖片 </param>
+        /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
+        public IEnumerable<IReadOnlyDictionary<string, int>> Detect(byte[] imageData)
+        {
+            Mat mat = new Mat();
+            CvInvoke.Imdecode(imageData, Emgu.CV.CvEnum.ImreadModes.Color, mat);
+            return Detect(mat);
+        }
+
+        /// <summary>
+        /// 偵測圖片中的臉部
+        /// </summary>
         /// <param name="image"> 圖片 </param>
         /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
         public IEnumerable<IReadOnlyDictionary<string, int>> Detect(Mat image)

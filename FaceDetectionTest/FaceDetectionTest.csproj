@@ -26,4 +26,49 @@
     <Folder Include="Image\FaceDetector\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Image\FaceDetector\13_Interview_Interview_2_People_Visible_13_274.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceDetector\13_Interview_Interview_On_Location_13_199.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceDetector\FaceMask.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceDetector\FaceMask.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\FaceMask\03b13a81-14ca-4899-991e-66fa6f0e9580.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\FaceMask\1fe5edaf-5c7f-4e8e-a5c8-f7c41293f992.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\FaceMask\2a4a539e-b599-47d8-9819-379e1c5dbe60.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\FaceMask\2b58170b-9003-42fc-82b5-a02bf79f2b51.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\FaceMask\3a7966ae-3e6b-4c85-90ec-4de3fc06fd4f.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\Face\0a4b8c12-b0f0-480e-9e9c-bcfd6e37f370.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\Face\0f2f8280-99a1-4628-b8d6-205ca2e1bc02.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\Face\0fb4927c-5e69-4425-a8f3-ad8c4e792f65.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\Face\1c1902ed-d388-488f-b9a3-d5a4ca426663.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Image\FaceMaskDetector\Face\1c29b333-e761-4287-ba02-d544ce6361b7.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

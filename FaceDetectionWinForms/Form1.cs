@@ -46,7 +46,7 @@ namespace FaceDetectionWinForms
                     foreach (Rectangle faceRectangle in facesRectangle)
                     {
                         Mat face = GetFaceImage(frame, faceRectangle);
-                        bool result = faceMaskDetector.Detect(new ImageInputData { Image = Mat2Bytes(face.ToBitmap()) });
+                        bool result = faceMaskDetector.Detect(new ImageInputData { Image = Bitmap2Bytes(face.ToBitmap()) });
                         if (result)
                             CvInvoke.Rectangle(frame, faceRectangle, new Bgr(Color.Green).MCvScalar, 2);
                         else
@@ -58,11 +58,11 @@ namespace FaceDetectionWinForms
             }
         }
 
-        private static byte[] Mat2Bytes(Bitmap image)
+        private static byte[] Bitmap2Bytes(Bitmap image)
         {
             MemoryStream memoryStream = new MemoryStream();
             image.Save(memoryStream, ImageFormat.Jpeg);
-
+            
             return memoryStream.ToArray();
         }
 
