@@ -10,18 +10,15 @@
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.2.0.3662" />
     <PackageReference Include="Microsoft.ML" Version="1.4.0" />
     <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.4.0" />
-    <PackageReference Include="Microsoft.ML.TensorFlow" Version="1.4.0" />
+    <PackageReference Include="Microsoft.ML.Vision" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="models\face_mask_0.pb">
+    <None Update="models\custom_retrained_model_based_on_resnet_v2_50_299.meta.pb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="models\face_mask_1.pb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="models\face_mask_2.pb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="models\Resnet50_V2.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="models\opencv_face_detector.pbtxt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

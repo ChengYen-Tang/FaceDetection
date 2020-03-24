@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using FaceDetection;
-using FaceDetection.DataModels;
+using FaceDetection.FaceMaskDetector;
+using FaceDetection.FaceMaskDetector.DataModels;
 
 namespace FaceDetectionWinForms
 {
@@ -47,7 +46,7 @@ namespace FaceDetectionWinForms
                     foreach (Rectangle faceRectangle in facesRectangle)
                     {
                         Mat face = GetFaceImage(frame, faceRectangle);
-                        bool result = faceMaskDetector.Detect(new ImageInputData { Image = face.ToBitmap() });
+                        bool result = faceMaskDetector.Detect(new ImageInputData { Image = Mat2Bytes(face.ToBitmap()) });
                         if (result)
                             CvInvoke.Rectangle(frame, faceRectangle, new Bgr(Color.Green).MCvScalar, 2);
                         else
@@ -57,6 +56,14 @@ namespace FaceDetectionWinForms
                     imageBox1.Image = frame.ToImage<Bgr, byte>();
                 }
             }
+        }
+
+        private static byte[] Mat2Bytes(Bitmap image)
+        {
+            MemoryStream memoryStream = new MemoryStream();
+            image.Save(memoryStream, ImageFormat.Jpeg);
+
+            return memoryStream.ToArray();
         }
 
         private Mat GetFaceImage(Mat image, Rectangle faceRectangle)

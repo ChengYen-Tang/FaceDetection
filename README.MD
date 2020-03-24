@@ -24,15 +24,6 @@
 - [ ] 整合成 WebAPI
     - [ ] 單元測試
 
-## 口罩訓練
-- [訓練程式碼](https://github.com/ChengYen-Tang/DisasterClassification) (備註: 這是訓練其他東西用的，需要調整)
+## 口罩辨識
 - [訓練資料集](https://drive.google.com/file/d/1meHXviN_PrWCOlaQRr7weNjr9g_xDqr-/view?usp=sharing)
-
-## 已知問題
-- 口罩偵測模組，某些角度或距離太遠可能會出現誤判的情況
-    - 臨時解決方法
-        1. 將員工或學生資料加入資料集( 訓練資料集出現過的人臉可解決此問題 )
-    - 待實驗
-        1. 使用較小型的神經網路
-        1. 使用 [Facenet](https://github.com/davidsandberg/facenet) 取得面部特徵，並計算輸入與資料集的歐式距離來分類
-        1. 增加訓練資料集資料
+- 模型結構: Resnet50_V2
