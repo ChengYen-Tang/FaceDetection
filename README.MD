@@ -1,12 +1,10 @@
 # 臉部偵測-[開發中]
 
-[![組建狀態](https://devops.nssh.ntpc.edu.tw/DevOps/Information_Section/COVID-19/_apis/build/status/COVID-19-ASP.NET%20Core-CI?branchName=master)](https://devops.nssh.ntpc.edu.tw/DevOps/Information_Section/COVID-19/_build/latest?definitionId=2&branchName=master)
-
 隨著 COVID-19 的確診人數不斷增加，越來越多單位會要求進入公司或校園前需要量體溫並戴口罩。本專案目的是為了降低人力成本，在單位入口架設普通鏡頭及紅外線鏡頭，自動化對穿過入口的人進行快速檢查。
 
-
 ## 效果
-![001](./Img/Mask.png =400x450)
+<img src="./Img/Mask.png" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="300" height="340" />
+<img src="./Img/NoMask.png" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="300" height="340" />
 ![002](./Img/NoMask.png =400x450)
 
 ## 流程
