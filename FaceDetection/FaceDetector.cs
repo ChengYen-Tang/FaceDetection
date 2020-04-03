@@ -62,19 +62,22 @@ namespace FaceDetection
             for (int faceIndex = 0; faceIndex < resultFaceCount; faceIndex++)
             {
                 float faceConfidence = facesInfo[faceIndex * resultFaceInfoLength + 2];
+                int x1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 3] * image.Width);
+                int y1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 4] * image.Height);
+                int x2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 5] * image.Width);
+                int y2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 6] * image.Height);
 
-                if (faceConfidence > 0.7)
+                if (faceConfidence > 0.7 &&
+                    x1 < image.Width && x2 <= image.Width &&
+                    y1 < image.Height && y2 <= image.Height)
                 {
-                    int x1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 3] * image.Width);
-                    int y1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 4] * image.Height);
-                    int x2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 5] * image.Width);
-                    int y2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 6] * image.Height);
-
-                    Dictionary<string, int> face = new Dictionary<string, int>();
-                    face.Add("top", x1);
-                    face.Add("left", y1);
-                    face.Add("width", x2 - x1);
-                    face.Add("height", y2 - y1);
+                    Dictionary<string, int> face = new Dictionary<string, int>
+                    {
+                        { "top", x1 },
+                        { "left", y1 },
+                        { "width", x2 - x1 },
+                        { "height", y2 - y1 }
+                    };
 
                     yield return face;
                 }
