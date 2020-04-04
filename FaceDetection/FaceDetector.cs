@@ -1,4 +1,5 @@
 ﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Dnn;
 using Emgu.CV.Structure;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace FaceDetection
 {
@@ -27,6 +29,26 @@ namespace FaceDetection
         }
 
         /// <summary>
+        /// 偵測圖片中的臉部 (非同步)
+        /// </summary>
+        /// <param name="imageData"> 圖片 </param>
+        /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
+        public async Task<IEnumerable<IReadOnlyDictionary<string, int>>> DetectAsync(byte[] imageData)
+        {
+            return await Task.Run(() => Detect(imageData));
+        }
+
+        /// <summary>
+        /// 偵測圖片中的臉部 (非同步)
+        /// </summary>
+        /// <param name="image"> 圖片 </param>
+        /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
+        public async Task<IEnumerable<IReadOnlyDictionary<string, int>>> DetectAsync(Mat image)
+        {
+            return await Task.Run(() => Detect(image));
+        }
+
+        /// <summary>
         /// 偵測圖片中的臉部
         /// </summary>
         /// <param name="imageData"> 圖片 </param>
@@ -34,7 +56,7 @@ namespace FaceDetection
         public IEnumerable<IReadOnlyDictionary<string, int>> Detect(byte[] imageData)
         {
             Mat mat = new Mat();
-            CvInvoke.Imdecode(imageData, Emgu.CV.CvEnum.ImreadModes.Color, mat);
+            CvInvoke.Imdecode(imageData, ImreadModes.Color, mat);
             return Detect(mat);
         }
 
@@ -76,7 +98,11 @@ namespace FaceDetection
                         { "top", x1 },
                         { "left", y1 },
                         { "width", x2 - x1 },
-                        { "height", y2 - y1 }
+                        { "height", y2 - y1 },
+                        { "x1", x1 },
+                        { "x2", x2 },
+                        { "y1", y1 },
+                        { "y2", y2 }
                     };
 
                     yield return face;
