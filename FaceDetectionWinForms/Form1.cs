@@ -11,6 +11,7 @@ using Emgu.CV.Structure;
 using FaceDetection;
 using FaceDetection.FaceMaskDetector;
 using FaceDetection.FaceMaskDetector.DataModels;
+using BitmapExtension = FaceDetection.BitmapExtension;
 
 namespace FaceDetectionWinForms
 {
@@ -45,8 +46,8 @@ namespace FaceDetectionWinForms
                     IEnumerable<Rectangle> facesRectangle = faces.Select(face => new Rectangle(face["top"], face["left"], face["width"], face["height"]));
                     foreach (Rectangle faceRectangle in facesRectangle)
                     {
-                        Mat face = GetFaceImage(frame, faceRectangle);
-                        bool result = faceMaskDetector.Detect(new ImageInputData { Image = Bitmap2Bytes(face.ToBitmap()) });
+                        Mat face = FaceDetector.GetFaceImage(frame, faceRectangle);
+                        bool result = faceMaskDetector.Detect(BitmapExtension.ToBitmap(face));
                         if (result)
                             CvInvoke.Rectangle(frame, faceRectangle, new Bgr(Color.Green).MCvScalar, 2);
                         else
@@ -56,23 +57,6 @@ namespace FaceDetectionWinForms
                     imageBox1.Image = frame.ToImage<Bgr, byte>();
                 }
             }
-        }
-
-        private static byte[] Bitmap2Bytes(Bitmap image)
-        {
-            MemoryStream memoryStream = new MemoryStream();
-            image.Save(memoryStream, ImageFormat.Jpeg);
-            
-            return memoryStream.ToArray();
-        }
-
-        private Mat GetFaceImage(Mat image, Rectangle faceRectangle)
-        {
-            Image<Bgr, Byte> buffer = image.ToImage<Bgr, Byte>();
-            buffer.ROI = faceRectangle;
-            Image<Bgr, Byte> faceImage = buffer.Copy();
-
-            return faceImage.Mat;
         }
 
         private void button2_Click(object sender, EventArgs e)

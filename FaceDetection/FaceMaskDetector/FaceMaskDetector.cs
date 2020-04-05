@@ -2,8 +2,11 @@
 using Microsoft.ML;
 using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FaceDetection.FaceMaskDetector
 {
@@ -27,13 +30,26 @@ namespace FaceDetection.FaceMaskDetector
         }
 
         /// <summary>
+        /// 偵測是否有戴口罩 (非同步)
+        /// </summary>
+        /// <param name="image"></param>
+        public async Task<bool> DetectAsync(Bitmap image)
+        {
+            return await Task.Run(() => Detect(image));
+        }
+
+        /// <summary>
         /// 偵測是否有戴口罩
         /// </summary>
         /// <param name="image"></param>
         /// <returns></returns>
-        public bool Detect(ImageInputData image)
+        public bool Detect(Bitmap image)
         {
-            var prediction = predictionEngine.Predict(image);
+            MemoryStream memoryStream = new MemoryStream();
+            image.Save(memoryStream, ImageFormat.Jpeg);
+            image.Dispose();
+
+            var prediction = predictionEngine.Predict(new ImageInputData { Image = memoryStream.ToArray() });
             Debug.WriteLine("{0}, {1}", prediction.Score[0], prediction.Score[1]);
             return prediction.Score[1] / prediction.Score.Sum() > probabilityThreshold/100 ? true : false;
         }

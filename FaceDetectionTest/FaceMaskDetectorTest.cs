@@ -31,11 +31,7 @@ namespace FaceDetectionTest
             {
                 Bitmap image = new Bitmap(facePath);
 
-                MemoryStream memoryStream = new MemoryStream();
-                image.Save(memoryStream, ImageFormat.Jpeg);
-                image.Dispose();
-
-                var isMask = faceMaskDetector.Detect(new ImageInputData { Image = memoryStream.ToArray() });
+                var isMask = faceMaskDetector.Detect(image);
                 Assert.IsFalse(isMask);
             }
         }
@@ -49,11 +45,7 @@ namespace FaceDetectionTest
             {
                 Bitmap image = new Bitmap(faceMaskPath);
 
-                MemoryStream memoryStream = new MemoryStream();
-                image.Save(memoryStream, ImageFormat.Jpeg);
-                image.Dispose();
-
-                var isMask = faceMaskDetector.Detect(new ImageInputData { Image = memoryStream.ToArray() });
+                var isMask = faceMaskDetector.Detect(image);
                 Assert.IsTrue(isMask);
             }
         }

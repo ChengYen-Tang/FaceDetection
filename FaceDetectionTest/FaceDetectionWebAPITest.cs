@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using FaceDetectionWebAPI.models;
+using Newtonsoft.Json.Linq;
 
 namespace FaceDetectionTest
 {
@@ -42,8 +43,8 @@ namespace FaceDetectionTest
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var facesJson = await controller.FindFaceAsync(memoryStream.ToArray());
-            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceRectangle>>(facesJson);
+            var facesJson = await controller.FaceDetection(memoryStream.ToArray());
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
             Assert.AreEqual(faces.ToArray().Length, 0);
         }
 
@@ -57,8 +58,8 @@ namespace FaceDetectionTest
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var facesJson = await controller.FindFaceAsync(memoryStream.ToArray());
-            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceRectangle>>(facesJson);
+            var facesJson = await controller.FaceDetection(memoryStream.ToArray());
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
             Assert.AreEqual(faces.ToArray().Length, 2);
         }
 
@@ -72,9 +73,41 @@ namespace FaceDetectionTest
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var facesJson = await controller.FindFaceAsync(memoryStream.ToArray());
-            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceRectangle>>(facesJson);
+            var facesJson = await controller.FaceDetection(memoryStream.ToArray());
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
             Assert.AreEqual(faces.ToArray().Length, 2);
+        }
+
+        [TestMethod]
+        public async Task FaceMaskTestAsync()
+        {
+            string imagePath = Path.Combine(imageFolder, "FaceMask.jpg");
+            Bitmap image = new Bitmap(imagePath);
+
+            MemoryStream memoryStream = new MemoryStream();
+            image.Save(memoryStream, ImageFormat.Jpeg);
+            image.Dispose();
+
+            var facesJson = await controller.MaskDetection(memoryStream.ToArray());
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
+            foreach (var face in faces)
+                Assert.IsTrue(face.FaceAttributes.IsMask);
+        }
+
+        [TestMethod]
+        public async Task NoMaskTestAsync()
+        {
+            string imagePath = Path.Combine(imageFolder, "13_Interview_Interview_2_People_Visible_13_274.jpg");
+            Bitmap image = new Bitmap(imagePath);
+
+            MemoryStream memoryStream = new MemoryStream();
+            image.Save(memoryStream, ImageFormat.Jpeg);
+            image.Dispose();
+
+            var facesJson = await controller.MaskDetection(memoryStream.ToArray());
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
+            foreach (var face in faces)
+                Assert.IsFalse(face.FaceAttributes.IsMask);
         }
 
         #region IDisposable Support

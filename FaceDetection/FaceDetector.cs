@@ -110,6 +110,28 @@ namespace FaceDetection
             }
         }
 
+        public static Mat GetFaceImage(byte[] imageData, Rectangle faceRectangle)
+        {
+            Mat mat = new Mat();
+            CvInvoke.Imdecode(imageData, ImreadModes.Color, mat);
+            return GetFaceImage(mat, faceRectangle);
+        }
+
+        /// <summary>
+        /// 從圖片切割出臉部圖片
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="faceRectangle"></param>
+        /// <returns></returns>
+        public static Mat GetFaceImage(Mat image, Rectangle faceRectangle)
+        {
+            Image<Bgr, Byte> buffer = image.ToImage<Bgr, Byte>();
+            buffer.ROI = faceRectangle;
+            Image<Bgr, Byte> faceImage = buffer.Copy();
+
+            return faceImage.Mat;
+        }
+
         #region IDisposable Support
         private bool disposedValue = false; // 偵測多餘的呼叫
 

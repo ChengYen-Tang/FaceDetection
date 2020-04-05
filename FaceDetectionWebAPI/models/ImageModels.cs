@@ -22,4 +22,10 @@ namespace FaceDetectionWebAPI.models
         public bool IsMask { get; set; }
         public bool IsFever { get; set; }
     }
+
+    public class FaceModel
+    { 
+        public FaceRectangle FaceRectangle { get; set; }
+        public FaceAttributes FaceAttributes { get; set; }
+    }
 }
