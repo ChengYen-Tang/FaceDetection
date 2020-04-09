@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace FaceDetectionWebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/{action}")]
     [ApiController]
     public class FaceDetectorController : ControllerBase
     {
@@ -25,9 +25,9 @@ namespace FaceDetectionWebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<string> FaceDetection(byte[] imageData)
+        public async Task<string> FaceDetection([FromBody] UploadCustomerImageModel model)
         {
-            IEnumerable<FaceRectangle> faces = (await faceDetector.DetectAsync(imageData))
+            IEnumerable<FaceRectangle> faces = (await faceDetector.DetectAsync(model.ImageData))
                 .Select(face => new FaceRectangle { 
                     Height = face["height"], 
                     Left = face["left"],
@@ -43,9 +43,9 @@ namespace FaceDetectionWebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<string> MaskDetection(byte[] imageData)
+        public async Task<string> MaskDetection([FromBody] UploadCustomerImageModel model)
         {
-            IEnumerable<FaceRectangle> faces = (await faceDetector.DetectAsync(imageData))
+            IEnumerable<FaceRectangle> faces = (await faceDetector.DetectAsync(model.ImageData))
                 .Select(face => new FaceRectangle
                 {
                     Height = face["height"],
@@ -61,7 +61,7 @@ namespace FaceDetectionWebAPI.Controllers
 
             List<FaceModel> faceModels = new List<FaceModel>();
             foreach (var face in faces)
-                faceModels.Add(await FaceAnalysisAsync(imageData, face, true));
+                faceModels.Add(await FaceAnalysisAsync(model.ImageData, face, true));
 
             return JsonConvert.SerializeObject(faceModels);
         }
