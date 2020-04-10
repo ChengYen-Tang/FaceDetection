@@ -15,5 +15,7 @@
     <ProjectReference Include="..\FaceDetection\FaceDetection.csproj" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 
 </Project>

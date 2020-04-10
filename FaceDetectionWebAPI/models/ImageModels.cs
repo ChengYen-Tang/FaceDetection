@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace FaceDetectionWebAPI.models
@@ -27,5 +28,11 @@ namespace FaceDetectionWebAPI.models
     { 
         public FaceRectangle FaceRectangle { get; set; }
         public FaceAttributes FaceAttributes { get; set; }
+    }
+
+    public class UploadCustomerImageModel
+    {
+        [JsonConverter(typeof(Base64FileJsonConverter))]
+        public byte[] ImageData { get; set; }
     }
 }

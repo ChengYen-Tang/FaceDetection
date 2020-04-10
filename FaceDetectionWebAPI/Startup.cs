@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FaceDetection;
 using FaceDetection.FaceMaskDetector;
+using FaceDetectionWebAPI.models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace FaceDetectionWebAPI
 {
@@ -36,7 +38,7 @@ namespace FaceDetectionWebAPI
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, FaceDetector faceDetector, FaceMaskDetector faceMaskDetector)
         {
             if (env.IsDevelopment())
             {
@@ -69,7 +71,7 @@ namespace FaceDetectionWebAPI
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await Echo(context, webSocket);
+                        await Echo(context, webSocket, faceDetector, faceMaskDetector);
                     }
                     else
                     {
@@ -85,13 +87,31 @@ namespace FaceDetectionWebAPI
         }
 
         #region Echo
-        private async Task Echo(HttpContext context, WebSocket webSocket)
+        private async Task Echo(HttpContext context, WebSocket webSocket, FaceDetector faceDetector, FaceMaskDetector faceMaskDetector)
         {
             var buffer = new byte[1024 * 1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             while (!result.CloseStatus.HasValue)
             {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                byte[] imageData = buffer[..result.Count];
+                IEnumerable<FaceRectangle> faces = (await faceDetector.DetectAsync(imageData))
+                    .Select(face => new FaceRectangle
+                    {
+                        Height = face["height"],
+                        Left = face["left"],
+                        Top = face["top"],
+                        Width = face["width"],
+                        X1 = face["x1"],
+                        X2 = face["x2"],
+                        Y1 = face["y1"],
+                        Y2 = face["y2"]
+                    });
+
+                List<FaceModel> faceModels = new List<FaceModel>();
+                foreach (var face in faces)
+                    faceModels.Add(await Utils.FaceAnalysisAsync(faceMaskDetector, imageData, face, true));
+
+                await webSocket.SendAsync(new ArraySegment<byte>(Convert.FromBase64String(JsonConvert.SerializeObject(faceModels))), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }

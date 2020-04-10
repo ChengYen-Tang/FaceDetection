@@ -61,22 +61,9 @@ namespace FaceDetectionWebAPI.Controllers
 
             List<FaceModel> faceModels = new List<FaceModel>();
             foreach (var face in faces)
-                faceModels.Add(await FaceAnalysisAsync(model.ImageData, face, true));
+                faceModels.Add(await Utils.FaceAnalysisAsync(faceMaskDetector, model.ImageData, face, true));
 
             return JsonConvert.SerializeObject(faceModels);
-        }
-
-        private async Task<FaceModel> FaceAnalysisAsync(byte[] imageData, FaceRectangle faceRectangle, bool mask)
-        {
-            FaceModel faceModel = new FaceModel { FaceRectangle = faceRectangle, FaceAttributes = new FaceAttributes() };
-            if (mask)
-            {
-                Rectangle rectangle = new Rectangle(faceRectangle.Top, faceRectangle.Left, faceRectangle.Width, faceRectangle.Height);
-                Mat face = FaceDetector.GetFaceImage(imageData, rectangle);
-                faceModel.FaceAttributes.IsMask = await faceMaskDetector.DetectAsync(face.ToBitmap());
-            }
-
-            return faceModel;
         }
     }
 }
