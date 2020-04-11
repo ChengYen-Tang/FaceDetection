@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FaceDetection;
@@ -111,7 +112,7 @@ namespace FaceDetectionWebAPI
                 foreach (var face in faces)
                     faceModels.Add(await Utils.FaceAnalysisAsync(faceMaskDetector, imageData, face, true));
 
-                await webSocket.SendAsync(new ArraySegment<byte>(Convert.FromBase64String(JsonConvert.SerializeObject(faceModels))), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                await webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(faceModels))), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
