@@ -60,8 +60,9 @@ namespace FaceDetectionWebAPI.Controllers
 
 
             List<FaceModel> faceModels = new List<FaceModel>();
-            foreach (var face in faces)
+            Parallel.ForEach(faces, async (face) => {
                 faceModels.Add(await Utils.FaceAnalysisAsync(faceMaskDetector, model.ImageData, face, true));
+            });
 
             return JsonConvert.SerializeObject(faceModels);
         }
