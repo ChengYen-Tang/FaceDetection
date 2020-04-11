@@ -109,8 +109,8 @@ namespace FaceDetectionWebAPI
                     });
 
                 List<FaceModel> faceModels = new List<FaceModel>();
-                Parallel.ForEach(faces, async (face) => {
-                    faceModels.Add(await Utils.FaceAnalysisAsync(faceMaskDetector, imageData, face, true));
+                Parallel.ForEach(faces, (face) => {
+                    faceModels.Add(Utils.FaceAnalysis(faceMaskDetector, imageData, face, true));
                 });
 
                 await webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(faceModels))), result.MessageType, result.EndOfMessage, CancellationToken.None);

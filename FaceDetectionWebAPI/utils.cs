@@ -31,14 +31,14 @@ namespace FaceDetectionWebAPI
 
 	public static class Utils
 	{
-		public async static Task<FaceModel> FaceAnalysisAsync(FaceMaskDetector faceMaskDetector, byte[] imageData, FaceRectangle faceRectangle, bool mask)
+		public static FaceModel FaceAnalysis(FaceMaskDetector faceMaskDetector, byte[] imageData, FaceRectangle faceRectangle, bool mask)
 		{
 			FaceModel faceModel = new FaceModel { FaceRectangle = faceRectangle, FaceAttributes = new FaceAttributes() };
 			if (mask)
 			{
 				Rectangle rectangle = new Rectangle(faceRectangle.Top, faceRectangle.Left, faceRectangle.Width, faceRectangle.Height);
 				Mat face = FaceDetector.GetFaceImage(imageData, rectangle);
-				faceModel.FaceAttributes.IsMask = await faceMaskDetector.DetectAsync(face.ToBitmap());
+				faceModel.FaceAttributes.IsMask = faceMaskDetector.Detect(face.ToBitmap());
 			}
 
 			return faceModel;
