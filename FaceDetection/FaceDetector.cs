@@ -3,6 +3,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Dnn;
 using Emgu.CV.Structure;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -81,33 +82,37 @@ namespace FaceDetection
             float[] facesInfo = new float[resultFaceCount * resultFaceInfoLength];
             Marshal.Copy(detection.DataPointer, facesInfo, 0, facesInfo.Length);
 
-            for (int faceIndex = 0; faceIndex < resultFaceCount; faceIndex++)
-            {
-                float faceConfidence = facesInfo[faceIndex * resultFaceInfoLength + 2];
-                int x1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 3] * image.Width);
-                int y1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 4] * image.Height);
-                int x2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 5] * image.Width);
-                int y2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 6] * image.Height);
+            ConcurrentStack<IReadOnlyDictionary<string, int>> result = new ConcurrentStack<IReadOnlyDictionary<string, int>>();
 
-                if (faceConfidence > 0.7 &&
-                    x1 < image.Width && x2 <= image.Width &&
-                    y1 < image.Height && y2 <= image.Height)
-                {
-                    Dictionary<string, int> face = new Dictionary<string, int>
+            Parallel.For(0, resultFaceCount,
+                faceIndex => {
+                    float faceConfidence = facesInfo[faceIndex * resultFaceInfoLength + 2];
+                    int x1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 3] * image.Width);
+                    int y1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 4] * image.Height);
+                    int x2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 5] * image.Width);
+                    int y2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 6] * image.Height);
+
+                    if (faceConfidence > 0.7 &&
+                        x1 < image.Width && x2 <= image.Width &&
+                        y1 < image.Height && y2 <= image.Height)
                     {
-                        { "top", x1 },
-                        { "left", y1 },
-                        { "width", x2 - x1 },
-                        { "height", y2 - y1 },
-                        { "x1", x1 },
-                        { "x2", x2 },
-                        { "y1", y1 },
-                        { "y2", y2 }
-                    };
+                        Dictionary<string, int> face = new Dictionary<string, int>
+                        {
+                            { "top", x1 },
+                            { "left", y1 },
+                            { "width", x2 - x1 },
+                            { "height", y2 - y1 },
+                            { "x1", x1 },
+                            { "x2", x2 },
+                            { "y1", y1 },
+                            { "y2", y2 }
+                        };
 
-                    yield return face;
-                }
-            }
+                        result.Push(face);
+                    }
+                });
+
+            return result;
         }
 
         public static Mat GetFaceImage(byte[] imageData, Rectangle faceRectangle)

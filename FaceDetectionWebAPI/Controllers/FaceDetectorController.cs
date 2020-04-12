@@ -59,10 +59,7 @@ namespace FaceDetectionWebAPI.Controllers
                 });
 
 
-            List<FaceModel> faceModels = new List<FaceModel>();
-            Parallel.ForEach(faces, (face) => {
-                faceModels.Add(Utils.FaceAnalysis(faceMaskDetector, model.ImageData, face, true));
-            });
+            IEnumerable<FaceModel> faceModels = Utils.FaceAnalysis(faceMaskDetector, model.ImageData, faces, true);
 
             return JsonConvert.SerializeObject(faceModels);
         }

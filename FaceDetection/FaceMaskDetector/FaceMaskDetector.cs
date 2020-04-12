@@ -1,6 +1,7 @@
 ﻿using FaceDetection.FaceMaskDetector.DataModels;
 using Microsoft.ML;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -13,8 +14,8 @@ namespace FaceDetection.FaceMaskDetector
     public class FaceMaskDetector : IDisposable
     {
         private readonly MLContext mlContext;
-        private readonly PredictionEngine<ImageInputData, ImageLabelPredictions> predictionEngine;
         private readonly float probabilityThreshold;
+        private ITransformer model;
 
         /// <summary>
         /// 初始化口罩偵測物件
@@ -25,7 +26,8 @@ namespace FaceDetection.FaceMaskDetector
             string modelPath = Path.Combine(programPath, "models", modelName);
             
             mlContext = new MLContext();
-            predictionEngine = SetupPredictionEngine(modelPath);
+            // Load the model
+            model = mlContext.Model.Load(modelPath, out _);
             this.probabilityThreshold = probabilityThreshold;
         }
 
@@ -39,6 +41,15 @@ namespace FaceDetection.FaceMaskDetector
         }
 
         /// <summary>
+        /// 偵測是否有戴口罩 (非同步)
+        /// </summary>
+        /// <param name="image"></param>
+        public async Task<IEnumerable<bool>> DetectAsync(IEnumerable<Bitmap> images)
+        {
+            return await Task.Run(() => Detect(images));
+        }
+
+        /// <summary>
         /// 偵測是否有戴口罩
         /// </summary>
         /// <param name="image"></param>
@@ -49,25 +60,31 @@ namespace FaceDetection.FaceMaskDetector
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var prediction = predictionEngine.Predict(new ImageInputData { Image = memoryStream.ToArray() });
-            Debug.WriteLine("{0}, {1}", prediction.Score[0], prediction.Score[1]);
-            return prediction.Score[1] / prediction.Score.Sum() > probabilityThreshold/100 ? true : false;
+            using (var predictionEngine = mlContext.Model.CreatePredictionEngine<ImageInputData, ImageLabelPredictions>(model))
+            {
+                var prediction = predictionEngine.Predict(new ImageInputData { Image = memoryStream.ToArray() });
+                Debug.WriteLine("{0}, {1}", prediction.Score[0], prediction.Score[1]);
+                return prediction.Score[1] / prediction.Score.Sum() > probabilityThreshold / 100 ? true : false;
+            }
         }
 
         /// <summary>
-        /// 建置模型
+        /// 偵測是否有戴口罩
         /// </summary>
-        /// <param name="tensorFlowModelFilePath"> 模型路徑 </param>
-        /// <returns></returns>
-        private PredictionEngine<ImageInputData, ImageLabelPredictions> SetupPredictionEngine(string modelFilePath)
+        /// <param name="images"></param>
+        public IEnumerable<bool> Detect(IEnumerable<Bitmap> images)
         {
-            // Load the model
-            var loadedModel = mlContext.Model.Load(modelFilePath, out _);
+            IEnumerable<ImageInputData> imageDatas = images.Select(image => {
+                MemoryStream memoryStream = new MemoryStream();
+                image.Save(memoryStream, ImageFormat.Jpeg);
+                image.Dispose();
+                return new ImageInputData { Image = memoryStream.ToArray() };
+            });
 
-            // Create prediction engine to try a single prediction (input = ImageData, output = ImagePrediction)
-            var predictionEngine = mlContext.Model.CreatePredictionEngine<ImageInputData, ImageLabelPredictions>(loadedModel);
-
-            return predictionEngine;
+            IDataView datas = mlContext.Data.LoadFromEnumerable<ImageInputData>(imageDatas);
+            IDataView predictionData = model.Transform(datas);
+            IEnumerable<ImageLabelPredictions> predictions = mlContext.Data.CreateEnumerable<ImageLabelPredictions>(predictionData, reuseRowObject: true);
+            return predictions.Select(prediction => { return prediction.Score[1] / prediction.Score.Sum() > probabilityThreshold / 100 ? true : false; });
         }
 
         #region IDisposable Support
@@ -80,7 +97,6 @@ namespace FaceDetection.FaceMaskDetector
                 if (disposing)
                 {
                     // TODO: 處置 Managed 狀態 (Managed 物件)。
-                    predictionEngine.Dispose();
                 }
 
                 // TODO: 釋放 Unmanaged 資源 (Unmanaged 物件) 並覆寫下方的完成項。
