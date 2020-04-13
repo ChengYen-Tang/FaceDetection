@@ -1,11 +1,14 @@
 ﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Dnn;
 using Emgu.CV.Structure;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace FaceDetection
 {
@@ -27,6 +30,26 @@ namespace FaceDetection
         }
 
         /// <summary>
+        /// 偵測圖片中的臉部 (非同步)
+        /// </summary>
+        /// <param name="imageData"> 圖片 </param>
+        /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
+        public async Task<IEnumerable<IReadOnlyDictionary<string, int>>> DetectAsync(byte[] imageData)
+        {
+            return await Task.Run(() => Detect(imageData));
+        }
+
+        /// <summary>
+        /// 偵測圖片中的臉部 (非同步)
+        /// </summary>
+        /// <param name="image"> 圖片 </param>
+        /// <returns> 臉部座標 (X, Y, 寬度, 高度) </returns>
+        public async Task<IEnumerable<IReadOnlyDictionary<string, int>>> DetectAsync(Mat image)
+        {
+            return await Task.Run(() => Detect(image));
+        }
+
+        /// <summary>
         /// 偵測圖片中的臉部
         /// </summary>
         /// <param name="imageData"> 圖片 </param>
@@ -34,7 +57,7 @@ namespace FaceDetection
         public IEnumerable<IReadOnlyDictionary<string, int>> Detect(byte[] imageData)
         {
             Mat mat = new Mat();
-            CvInvoke.Imdecode(imageData, Emgu.CV.CvEnum.ImreadModes.Color, mat);
+            CvInvoke.Imdecode(imageData, ImreadModes.Color, mat);
             return Detect(mat);
         }
 
@@ -59,26 +82,59 @@ namespace FaceDetection
             float[] facesInfo = new float[resultFaceCount * resultFaceInfoLength];
             Marshal.Copy(detection.DataPointer, facesInfo, 0, facesInfo.Length);
 
-            for (int faceIndex = 0; faceIndex < resultFaceCount; faceIndex++)
-            {
-                float faceConfidence = facesInfo[faceIndex * resultFaceInfoLength + 2];
+            ConcurrentStack<IReadOnlyDictionary<string, int>> result = new ConcurrentStack<IReadOnlyDictionary<string, int>>();
 
-                if (faceConfidence > 0.7)
-                {
+            Parallel.For(0, resultFaceCount,
+                faceIndex => {
+                    float faceConfidence = facesInfo[faceIndex * resultFaceInfoLength + 2];
                     int x1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 3] * image.Width);
                     int y1 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 4] * image.Height);
                     int x2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 5] * image.Width);
                     int y2 = Convert.ToInt32(facesInfo[faceIndex * resultFaceInfoLength + 6] * image.Height);
 
-                    Dictionary<string, int> face = new Dictionary<string, int>();
-                    face.Add("top", x1);
-                    face.Add("left", y1);
-                    face.Add("width", x2 - x1);
-                    face.Add("height", y2 - y1);
+                    if (faceConfidence > 0.7 &&
+                        x1 < image.Width && x2 <= image.Width &&
+                        y1 < image.Height && y2 <= image.Height)
+                    {
+                        Dictionary<string, int> face = new Dictionary<string, int>
+                        {
+                            { "top", x1 },
+                            { "left", y1 },
+                            { "width", x2 - x1 },
+                            { "height", y2 - y1 },
+                            { "x1", x1 },
+                            { "x2", x2 },
+                            { "y1", y1 },
+                            { "y2", y2 }
+                        };
 
-                    yield return face;
-                }
-            }
+                        result.Push(face);
+                    }
+                });
+
+            return result;
+        }
+
+        public static Mat GetFaceImage(byte[] imageData, Rectangle faceRectangle)
+        {
+            Mat mat = new Mat();
+            CvInvoke.Imdecode(imageData, ImreadModes.Color, mat);
+            return GetFaceImage(mat, faceRectangle);
+        }
+
+        /// <summary>
+        /// 從圖片切割出臉部圖片
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="faceRectangle"></param>
+        /// <returns></returns>
+        public static Mat GetFaceImage(Mat image, Rectangle faceRectangle)
+        {
+            Image<Bgr, Byte> buffer = image.ToImage<Bgr, Byte>();
+            buffer.ROI = faceRectangle;
+            Image<Bgr, Byte> faceImage = buffer.Copy();
+
+            return faceImage.Mat;
         }
 
         #region IDisposable Support

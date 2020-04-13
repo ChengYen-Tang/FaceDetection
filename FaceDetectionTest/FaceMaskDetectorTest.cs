@@ -1,12 +1,10 @@
 ﻿using FaceDetection.FaceMaskDetector;
-using FaceDetection.FaceMaskDetector.DataModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace FaceDetectionTest
 {
@@ -31,13 +29,24 @@ namespace FaceDetectionTest
             {
                 Bitmap image = new Bitmap(facePath);
 
-                MemoryStream memoryStream = new MemoryStream();
-                image.Save(memoryStream, ImageFormat.Jpeg);
-                image.Dispose();
-
-                var isMask = faceMaskDetector.Detect(new ImageInputData { Image = memoryStream.ToArray() });
+                var isMask = faceMaskDetector.Detect(image);
                 Assert.IsFalse(isMask);
             }
+        }
+
+        [TestMethod]
+        public void FaceMultiplePredictTest()
+        {
+            string faceFolder = Path.Combine(imageFolder, "Face");
+
+            IEnumerable<Bitmap> images = Directory.GetFiles(faceFolder, "*.jpg").Select(faceMaskPath => new Bitmap(faceMaskPath));
+
+            var isMasks = faceMaskDetector.Detect(images);
+
+            Assert.AreEqual(isMasks.Count(), images.Count());
+
+            foreach (var isMask in isMasks)
+                Assert.IsFalse(isMask);
         }
 
         [TestMethod]
@@ -49,13 +58,24 @@ namespace FaceDetectionTest
             {
                 Bitmap image = new Bitmap(faceMaskPath);
 
-                MemoryStream memoryStream = new MemoryStream();
-                image.Save(memoryStream, ImageFormat.Jpeg);
-                image.Dispose();
-
-                var isMask = faceMaskDetector.Detect(new ImageInputData { Image = memoryStream.ToArray() });
+                var isMask = faceMaskDetector.Detect(image);
                 Assert.IsTrue(isMask);
             }
+        }
+
+        [TestMethod]
+        public void FaceMaskMultiplePredictTest()
+        {
+            string faceMaskFolder = Path.Combine(imageFolder, "FaceMask");
+
+            IEnumerable<Bitmap> images = Directory.GetFiles(faceMaskFolder, "*.jpg").Select(faceMaskPath => new Bitmap(faceMaskPath));
+
+            var isMasks = faceMaskDetector.Detect(images);
+
+            Assert.AreEqual(isMasks.Count(), images.Count());
+
+            foreach (var isMask in isMasks)
+                Assert.IsTrue(isMask);
         }
 
         #region IDisposable Support

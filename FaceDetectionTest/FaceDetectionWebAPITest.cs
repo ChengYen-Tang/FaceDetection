@@ -1,30 +1,41 @@
-﻿using System;
+﻿using FaceDetection;
+using FaceDetection.FaceMaskDetector;
+using FaceDetectionWebAPI.Controllers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
-using FaceDetection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using FaceDetectionWebAPI.models;
+using Newtonsoft.Json.Linq;
+using FaceDetectionWebAPI;
 
 namespace FaceDetectionTest
 {
     [TestClass]
-    public class FaceDetectorTest : IDisposable
+    public class FaceDetectionWebAPITest : IDisposable
     {
         private FaceDetector faceDetector;
+        private FaceMaskDetector faceMaskDetector;
+        private FaceDetectorController controller;
         private readonly string imageFolder;
 
-        public FaceDetectorTest()
+        public FaceDetectionWebAPITest()
         {
             faceDetector = new FaceDetector();
+            faceMaskDetector = new FaceMaskDetector();
+            controller = new FaceDetectorController(faceDetector, faceMaskDetector);
             string programPath = AppDomain.CurrentDomain.BaseDirectory;
             imageFolder = Path.Combine(programPath, "Image", "FaceDetector");
         }
 
         [TestMethod]
-        public void NoFacePictureTest()
+        public async Task NoFacePictureTestAsync()
         {
             string imagePath = Path.Combine(imageFolder, "Taiwan.png");
             Bitmap image = new Bitmap(imagePath);
@@ -33,12 +44,13 @@ namespace FaceDetectionTest
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var faces = faceDetector.Detect(memoryStream.ToArray());
+            var facesJson = await controller.FaceDetection(new UploadCustomerImageModel { ImageData = memoryStream.ToArray() });
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
             Assert.AreEqual(faces.ToArray().Length, 0);
         }
 
         [TestMethod]
-        public void TwoFacePictureTest()
+        public async Task TwoFacePictureTestAsync()
         {
             string imagePath = Path.Combine(imageFolder, "13_Interview_Interview_2_People_Visible_13_274.jpg");
             Bitmap image = new Bitmap(imagePath);
@@ -47,12 +59,13 @@ namespace FaceDetectionTest
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var faces = faceDetector.Detect(memoryStream.ToArray());
+            var facesJson = await controller.FaceDetection(new UploadCustomerImageModel { ImageData = memoryStream.ToArray() });
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
             Assert.AreEqual(faces.ToArray().Length, 2);
         }
 
         [TestMethod]
-        public void FaceMaskPictureTest()
+        public async Task FaceMaskPictureTestAsync()
         {
             string imagePath = Path.Combine(imageFolder, "FaceMask.jpg");
             Bitmap image = new Bitmap(imagePath);
@@ -61,8 +74,41 @@ namespace FaceDetectionTest
             image.Save(memoryStream, ImageFormat.Jpeg);
             image.Dispose();
 
-            var faces = faceDetector.Detect(memoryStream.ToArray());
+            var facesJson = await controller.FaceDetection(new UploadCustomerImageModel { ImageData = memoryStream.ToArray() });
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
             Assert.AreEqual(faces.ToArray().Length, 2);
+        }
+
+        [TestMethod]
+        public async Task FaceMaskTestAsync()
+        {
+            string imagePath = Path.Combine(imageFolder, "FaceMask.jpg");
+            Bitmap image = new Bitmap(imagePath);
+
+            MemoryStream memoryStream = new MemoryStream();
+            image.Save(memoryStream, ImageFormat.Jpeg);
+            image.Dispose();
+
+            var facesJson = await controller.MaskDetection(new UploadCustomerImageModel { ImageData = memoryStream.ToArray() });
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
+            foreach (var face in faces)
+                Assert.IsTrue(face.FaceAttributes.IsMask);
+        }
+
+        [TestMethod]
+        public async Task NoMaskTestAsync()
+        {
+            string imagePath = Path.Combine(imageFolder, "13_Interview_Interview_2_People_Visible_13_274.jpg");
+            Bitmap image = new Bitmap(imagePath);
+
+            MemoryStream memoryStream = new MemoryStream();
+            image.Save(memoryStream, ImageFormat.Jpeg);
+            image.Dispose();
+
+            var facesJson = await controller.MaskDetection(new UploadCustomerImageModel { ImageData = memoryStream.ToArray() });
+            var faces = JsonConvert.DeserializeObject<IEnumerable<FaceModel>>(facesJson);
+            foreach (var face in faces)
+                Assert.IsFalse(face.FaceAttributes.IsMask);
         }
 
         #region IDisposable Support
@@ -76,6 +122,7 @@ namespace FaceDetectionTest
                 {
                     // TODO: 處置 Managed 狀態 (Managed 物件)。
                     faceDetector.Dispose();
+                    faceMaskDetector.Dispose();
                 }
 
                 // TODO: 釋放 Unmanaged 資源 (Unmanaged 物件) 並覆寫下方的完成項。
@@ -86,7 +133,7 @@ namespace FaceDetectionTest
         }
 
         // TODO: 僅當上方的 Dispose(bool disposing) 具有會釋放 Unmanaged 資源的程式碼時，才覆寫完成項。
-        ~FaceDetectorTest()
+        ~FaceDetectionWebAPITest()
         {
             // 請勿變更這個程式碼。請將清除程式碼放入上方的 Dispose(bool disposing) 中。
             Dispose(false);
@@ -101,7 +148,5 @@ namespace FaceDetectionTest
             GC.SuppressFinalize(this);
         }
         #endregion
-
-
     }
 }
